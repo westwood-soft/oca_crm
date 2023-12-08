@@ -40,6 +40,13 @@ class CrmClaim(models.Model):
             (x, _(self.env[x]._description)) for x in APPLICABLE_MODELS if x in self.env
         ]
 
+    company_id = fields.Many2one(
+        comodel_name="res.company",
+        string="Company",
+        compute="_compute_company",
+        store=True,
+    )
+
     name = fields.Char(string="Claim Subject", required=True)
     active = fields.Boolean(default=True)
     description = fields.Text()
