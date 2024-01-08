@@ -9,7 +9,7 @@ def migrate(cr, version):
         """
                INSERT INTO helpdesk_stage
                 (_stage_id, name, sequence, legend_blocked, legend_normal, legend_done)
-               SELECT id, name, sequence, 'Blockiert', 'In Bearbeitung', 'Erledigt'
+                SELECT id, name, sequence, '{ "de_DE": "Blockiert", "en_EN": "Blocked" }', '{ "de_DE": "In Bearbeitung", "en_EN": "In Progress" }', '{ "de_DE": "Erledigt", "en_EN": "Done" }'
                FROM crm_claim_stage
                """
     )
