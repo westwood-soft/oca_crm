@@ -19,8 +19,8 @@ def migrate(cr, version):
     cr.execute(
         """
                INSERT INTO helpdesk_ticket_type
-                (_categ_id, name, sequence)
-               SELECT id, name, sequence
+                (_categ_id, name)
+               SELECT id, name
                FROM crm_claim_category
         """
     )
