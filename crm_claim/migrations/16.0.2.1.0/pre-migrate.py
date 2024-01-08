@@ -8,8 +8,8 @@ def migrate(cr, version):
     cr.execute(
         """
                INSERT INTO helpdesk_stage
-                (_stage_id, active, name, sequence)
-               SELECT id, active, name, sequence
+                (_stage_id, name, sequence)
+               SELECT id, name, sequence
                FROM crm_claim_stage
                """
     )
