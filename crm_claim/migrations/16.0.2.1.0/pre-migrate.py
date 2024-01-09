@@ -45,7 +45,7 @@ def migrate(cr, version):
     cr.execute(
         """
                UPDATE helpdesk_ticket SET
-                ticket_type_id = htt.id,
+                ticket_type_id = htt.id
                FROM helpdesk_ticket_type htt
                WHERE htt._categ_id = helpdesk_ticket._categ_id
                """
@@ -54,7 +54,7 @@ def migrate(cr, version):
     cr.execute(
         """
                UPDATE helpdesk_ticket SET
-                stage_id = hs.id,
+                stage_id = hs.id
                FROM helpdesk_stage hs
                WHERE hs._stage_id = helpdesk_ticket._stage_id
                """
