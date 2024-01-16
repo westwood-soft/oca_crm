@@ -97,32 +97,36 @@ def migrate(cr, version):
 
     cr.execute(
         """
-               UPDATE helpdesk_ticket SET
-                ticket_type_id = htt.id
-               FROM helpdesk_ticket_type htt
-               WHERE htt._categ_id = helpdesk_ticket._categ_id
-               """
+           UPDATE helpdesk_ticket SET
+            ticket_type_id = htt.id
+           FROM helpdesk_ticket_type htt
+           WHERE htt._categ_id = helpdesk_ticket._categ_id
+        """
     )
 
     cr.execute(
         """
-               UPDATE helpdesk_ticket SET
-                stage_id = hs.id
-               FROM helpdesk_stage hs
-               WHERE hs._stage_id = helpdesk_ticket._stage_id
-               """
+           UPDATE helpdesk_ticket SET
+            stage_id = hs.id
+           FROM helpdesk_stage hs
+           WHERE hs._stage_id = helpdesk_ticket._stage_id
+        """
     )
-
-    util.create_column(cr, "helpdesk_ticket", "claim_id", "int4")
 
     cr.execute(
         """
             SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
-            """
+        """
     )
     ticket_claim_tuples = cr.fetchall()
     mapping = {ticket_id: claim_id for ticket_id, claim_id in ticket_claim_tuples}
     util.replace_record_references_batch(cr, mapping, "helpdesk.ticket", "crm.claim")
+
+    cr.execute(
+        """
+            UPDATE helpdesk_ticket AS ht SET company_id = rp.company_id FROM res_partner AS rp WHERE rp.id = ht.partner_id
+        """
+    )
 
     util.merge_model(cr, "crm.claim", "helpdesk.ticket")
     util.remove_column(cr, "helpdesk_stage", "_stage_id")
