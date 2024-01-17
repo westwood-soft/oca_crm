@@ -128,12 +128,6 @@ def migrate(cr, version):
         """
     )
 
-    cr.execute(
-        """
-            UPDATE helpdesk_ticket SET company_id = 1 WHERE company_id IS NULL
-        """
-    )
-
     util.merge_model(cr, "crm.claim", "helpdesk.ticket")
     util.remove_column(cr, "helpdesk_stage", "_stage_id")
     util.remove_column(cr, "helpdesk_ticket_type", "_categ_id")
