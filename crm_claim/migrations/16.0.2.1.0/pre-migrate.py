@@ -85,9 +85,9 @@ def migrate(cr, version):
     cr.execute(
         """
                INSERT INTO helpdesk_ticket
-               (_claim_id, _categ_id, _stage_id, name, active, sale_order_id, create_date, write_date, close_date, description, partner_id, user_id, company_id, kanban_state)
+               (_claim_id, _categ_id, _stage_id, ticket_ref, name, active, sale_order_id, create_date, write_date, close_date, description, partner_id, user_id, company_id, kanban_state)
                SELECT
-               id, categ_id, stage_id, name, active, CAST(split_part(model_ref_id, ',', 2) AS INTEGER) as sale_order_id, create_date, write_date, date_closed, description, partner_id, user_id, company_id, 'normal'
+               id, categ_id, stage_id, nextval('helpdesk_ticket_id_seq'), name, active, CAST(split_part(model_ref_id, ',', 2) AS INTEGER) as sale_order_id, create_date, write_date, date_closed, description, partner_id, user_id, company_id, 'normal'
                FROM crm_claim WHERE model_ref_id like 'sale.order,%' and exists(select 1 from sale_order where id = cast(split_part(model_ref_id, ',', 2) as integer))
         """
     )
@@ -114,6 +114,50 @@ def migrate(cr, version):
     )
 
     cr.execute(
+        "SELECT id FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id"
+    )
+
+    cr.execute(
+        """INSERT INTO helpdesk_team
+               (name, active, company_id, sequence, color, assign_method, use_alias, allow_portal_ticket_closing, use_website_helpdesk_form, use_website_helpdesk_livechat,
+                use_website_helpdesk_forum, use_website_helpdesk_slides, use_helpdesk_timesheet, use_helpdesk_sale_timesheet, use_credit_notes,
+                use_coupons, use_product_returns, use_product_repairs, use_twitter, use_rating, portal_show_rating, use_sla,
+                auto_close_ticket, auto_close_day, to_stage_id, use_fsm, privacy_visibility,
+                auto_assignment, ticket_properties, use_website_helpdesk_knowledge)
+               SELECT
+               '{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}', true, res_company.id, 10, 0, 'randomly', true, false, false, false, false,
+               false, false, false, false, false, false, false,
+               false, 7, 3, false, 'internal',
+               false, false, false
+               FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)
+           """
+    )
+
+    cr.execute(
+        """
+           UPDATE mail_message SET
+               model = 'helpdesk.ticket',
+               res_id = ht.id
+           FROM helpdesk_ticket ht
+           WHERE mail_message.model = 'crm.claim'
+           AND mail_message.res_id = ht._claim_id
+           AND ht._claim_id IS NOT NULL
+        """
+    )
+
+    cr.execute(
+        """
+           UPDATE ir_attachment SET
+               res_model = 'helpdesk.ticket',
+               res_id = ht.id
+           FROM helpdesk_ticket ht
+           WHERE ir_attachment.model = 'crm.claim'
+           AND ir_attachment.res_id = ht._claim_id
+           AND ht._claim_id IS NOT NULL
+        """
+    )
+
+    cr.execute(
         """
             SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
         """
@@ -128,9 +172,15 @@ def migrate(cr, version):
         """
     )
 
+    cr.execute(
+        """
+            UPDATE helpdesk_ticket AS ht SET team_id = team.id FROM helpdesk_team AS team WHERE ht.company_id = team.company_id
+        """
+    )
+
     util.merge_model(cr, "crm.claim", "helpdesk.ticket")
     util.remove_column(cr, "helpdesk_stage", "_stage_id")
     util.remove_column(cr, "helpdesk_ticket_type", "_categ_id")
-    util.remove_column(cr, "helpdesk_ticket", "_stageg_id")
+    util.remove_column(cr, "helpdesk_ticket", "_stage_id")
     util.remove_column(cr, "helpdesk_ticket", "_categ_id")
     util.remove_column(cr, "helpdesk_ticket", "_claim_id")
