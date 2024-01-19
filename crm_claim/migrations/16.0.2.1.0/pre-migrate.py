@@ -164,7 +164,7 @@ def migrate(cr, version):
         )
         team_id, alias_id = cr.fetchone()
         cr.execute(
-            "UPDATE mail_alias SET alias_defaults = to_json('{\"team_id\": %s}') WHERE id = %s",
+            "UPDATE mail_alias SET alias_defaults = to_json('{\"team_id\": %s}'::text) WHERE id = %s",
             (team_id, alias_id),
         )
 
