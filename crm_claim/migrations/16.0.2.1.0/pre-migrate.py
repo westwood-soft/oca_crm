@@ -133,7 +133,7 @@ def migrate(cr, version):
             """
             WITH alias_key AS (
                 INSERT INTO mail_alias (alias_name, alias_model_id, alias_user_id, alias_defaults, alias_parent_model_id, alias_parent_thread_id, alias_contact)
-                SELECT ''::text, %s, 1, to_json('{}'), %s, 1, 'everyone'
+                SELECT ''::text, %s, 1, to_json('{}'::text), %s, 1, 'everyone'
                 RETURNING id
                 )
             INSERT INTO helpdesk_team
@@ -145,14 +145,14 @@ def migrate(cr, version):
                     portal_show_rating, use_sla, auto_close_ticket, auto_close_day, to_stage_id,
                     use_fsm, privacy_visibility, auto_assignment, use_website_helpdesk_knowledge)
                SELECT
-                   to_json('{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}'::text) as name,
+                   to_json('{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}') as name,
                    alias_key.id,
-                   true as active, res_company.id as company_id, 10 as sequence, 0 as color,
-                   'randomly' as assign_method, true as use_alias, false as allow_portal_ticket_closing, false as use_website_helpdesk_form, false as use_website_helpdesk_livechat,
-                   false as use_website_helpdesk_forum, false as use_website_helpdesk_slides, false as use_helpdesk_timesheet, false as use_helpdesk_sale_timesheet, false as use_credit_notes,
-                   false as use_coupons, false as use_product_returns, false as use_product_repairs, false as use_twitter, false as use_rating,
-                   false as portal_show_rating, false as use_sla, false as auto_close_ticket, 7 as auto_close_day, 3 as to_stage_id,
-                   false as use_fsm, 'internal' as privacy_visibility, false as auto_assignment, false as use_website_helpdesk_knowledge
+                   true, res_company.id, 10, 0,
+                   'randomly', true, false, false, false,
+                   false, false, false, false, false,
+                   false, false, false, false, false,
+                   false, false, false, 7, 3,
+                   false, 'internal', false, false
                FROM alias_key, res_company WHERE res_company.id = %s
                RETURNING id, alias_id
                """,
