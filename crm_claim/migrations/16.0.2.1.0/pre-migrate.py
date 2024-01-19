@@ -119,19 +119,21 @@ def migrate(cr, version):
 
     cr.execute(
         """INSERT INTO helpdesk_team
-               (name, active, company_id, sequence, color,
+               (name,
+                active, company_id, sequence, color,
                 assign_method, use_alias, allow_portal_ticket_closing, use_website_helpdesk_form, use_website_helpdesk_livechat,
                 use_website_helpdesk_forum, use_website_helpdesk_slides, use_helpdesk_timesheet, use_helpdesk_sale_timesheet, use_credit_notes,
                 use_coupons, use_product_returns, use_product_repairs, use_twitter, use_rating,
                 portal_show_rating, use_sla, auto_close_ticket, auto_close_day, to_stage_id,
                 use_fsm, privacy_visibility, auto_assignment, ticket_properties, use_website_helpdesk_knowledge)
            SELECT
-               '{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}', true, res_company.id, 10, 0,
-               'randomly', true, false, false, false,
-               false, false, false, false, false,
-               false, false, false, false,
-               false, false, false, 7, 3,
-               false, 'internal', false, false, false
+               '{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}' as name,
+               true as active, res_company.id as company_id, 10 as sequence, 0 as color,
+               'randomly' as assign_method, true as use_alias, false as allow_portal_ticket_closing, false as use_website_helpdesk_form, false as use_website_helpdesk_livechat,
+               false as use_website_helpdesk_forum, false as use_website_helpdesk_slides, false as use_helpdesk_timesheet, false as use_helpdesk_sale_timesheet, false as use_credit_notes,
+               false as use_coupons, false as use_product_returns, false as use_product_repairs, false as use_twitter, false as use_rating,
+               false as portal_show_rating, false as use_sla, false as auto_close_ticket, 7 as auto_close_day, 3 as to_stage_id,
+               false as use_fsm, 'internal' privacy_visibility, false as auto_assignment, false as ticket_properties, false as use_website_helpdesk_knowledge
            FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)
            """
     )
