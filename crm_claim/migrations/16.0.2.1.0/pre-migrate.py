@@ -153,7 +153,7 @@ def migrate(cr, version):
                    false as use_coupons, false as use_product_returns, false as use_product_repairs, false as use_twitter, false as use_rating,
                    false as portal_show_rating, false as use_sla, false as auto_close_ticket, 7 as auto_close_day, 3 as to_stage_id,
                    false as use_fsm, 'internal' privacy_visibility, false as auto_assignment, false as use_website_helpdesk_knowledge
-               FROM alias_key, res_company WHERE id = %s
+               FROM alias_key, res_company WHERE res_company.id = %s
                RETURNING id, alias_id
                """,
             (helpdesk_ticket_model_id, helpdesk_team_model_id, missing_team_company_id),
