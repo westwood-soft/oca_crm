@@ -117,26 +117,52 @@ def migrate(cr, version):
         "SELECT id FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
     )
 
+    cr.execute("SELECT id from ir_model WHERE model = 'helpdesk.ticket'")
+    helpdesk_ticket_model_id = cr.fetchone()
+
+    cr.execute("SELECT id from ir_model WHERE model = 'helpdesk.team'")
+    helpdesk_team_model_id = cr.fetchone()
+
     cr.execute(
-        """INSERT INTO helpdesk_team
-               (name,
-                active, company_id, sequence, color,
-                assign_method, use_alias, allow_portal_ticket_closing, use_website_helpdesk_form, use_website_helpdesk_livechat,
-                use_website_helpdesk_forum, use_website_helpdesk_slides, use_helpdesk_timesheet, use_helpdesk_sale_timesheet, use_credit_notes,
-                use_coupons, use_product_returns, use_product_repairs, use_twitter, use_rating,
-                portal_show_rating, use_sla, auto_close_ticket, auto_close_day, to_stage_id,
-                use_fsm, privacy_visibility, auto_assignment, use_website_helpdesk_knowledge)
-           SELECT
-               to_json('{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}'::text) as name,
-               true as active, res_company.id as company_id, 10 as sequence, 0 as color,
-               'randomly' as assign_method, true as use_alias, false as allow_portal_ticket_closing, false as use_website_helpdesk_form, false as use_website_helpdesk_livechat,
-               false as use_website_helpdesk_forum, false as use_website_helpdesk_slides, false as use_helpdesk_timesheet, false as use_helpdesk_sale_timesheet, false as use_credit_notes,
-               false as use_coupons, false as use_product_returns, false as use_product_repairs, false as use_twitter, false as use_rating,
-               false as portal_show_rating, false as use_sla, false as auto_close_ticket, 7 as auto_close_day, 3 as to_stage_id,
-               false as use_fsm, 'internal' privacy_visibility, false as auto_assignment, false as use_website_helpdesk_knowledge
-           FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)
-           """
+        "SELECT id from res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
     )
+    missing_teams_company_ids = cr.fetchall()
+
+    for missing_team_company_id in missing_teams_company_ids:
+        cr.execute(
+            """
+            WITH alias_key AS (
+                INSERT INTO mail_alias (alias_name, alias_model_id, alias_user_id, alias_parent_model_id, alias_parent_thread_id, alias_contact)
+                SELECT '', %s, 1, %s, 1, 'everyone'
+                RETURNING id
+                )
+            INSERT INTO helpdesk_team
+                   (name, alias_id,
+                    active, company_id, sequence, color,
+                    assign_method, use_alias, allow_portal_ticket_closing, use_website_helpdesk_form, use_website_helpdesk_livechat,
+                    use_website_helpdesk_forum, use_website_helpdesk_slides, use_helpdesk_timesheet, use_helpdesk_sale_timesheet, use_credit_notes,
+                    use_coupons, use_product_returns, use_product_repairs, use_twitter, use_rating,
+                    portal_show_rating, use_sla, auto_close_ticket, auto_close_day, to_stage_id,
+                    use_fsm, privacy_visibility, auto_assignment, use_website_helpdesk_knowledge)
+               SELECT
+                   to_json('{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}'::text) as name,
+                   alias_key.id,
+                   true as active, res_company.id as company_id, 10 as sequence, 0 as color,
+                   'randomly' as assign_method, true as use_alias, false as allow_portal_ticket_closing, false as use_website_helpdesk_form, false as use_website_helpdesk_livechat,
+                   false as use_website_helpdesk_forum, false as use_website_helpdesk_slides, false as use_helpdesk_timesheet, false as use_helpdesk_sale_timesheet, false as use_credit_notes,
+                   false as use_coupons, false as use_product_returns, false as use_product_repairs, false as use_twitter, false as use_rating,
+                   false as portal_show_rating, false as use_sla, false as auto_close_ticket, 7 as auto_close_day, 3 as to_stage_id,
+                   false as use_fsm, 'internal' privacy_visibility, false as auto_assignment, false as use_website_helpdesk_knowledge
+               FROM res_company WHERE id = %s
+               RETURNING id, alias_id
+               """,
+            (helpdesk_ticket_model_id, helpdesk_team_model_id, missing_team_company_id),
+        )
+        team_id, alias_id = cr.fetchone()
+        cr.execute(
+            "UPDATE mail_alias SET alias_defaults = to_json('{\"team_id\": %s}') WHERE id = %s",
+            (team_id, alias_id),
+        )
 
     cr.execute(
         """
