@@ -119,17 +119,20 @@ def migrate(cr, version):
 
     cr.execute(
         """INSERT INTO helpdesk_team
-               (name, active, company_id, sequence, color, assign_method, use_alias, allow_portal_ticket_closing, use_website_helpdesk_form, use_website_helpdesk_livechat,
+               (name, active, company_id, sequence, color,
+                assign_method, use_alias, allow_portal_ticket_closing, use_website_helpdesk_form, use_website_helpdesk_livechat,
                 use_website_helpdesk_forum, use_website_helpdesk_slides, use_helpdesk_timesheet, use_helpdesk_sale_timesheet, use_credit_notes,
-                use_coupons, use_product_returns, use_product_repairs, use_twitter, use_rating, portal_show_rating, use_sla,
-                auto_close_ticket, auto_close_day, to_stage_id, use_fsm, privacy_visibility,
-                auto_assignment, ticket_properties, use_website_helpdesk_knowledge)
-               SELECT
-               '{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}', true, res_company.id, 10, 0, 'randomly', true, false, false, false, false,
-               false, false, false, false, false, false, false,
-               false, 7, 3, false, 'internal',
-               false, false, false
-               FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)
+                use_coupons, use_product_returns, use_product_repairs, use_twitter, use_rating,
+                portal_show_rating, use_sla, auto_close_ticket, auto_close_day, to_stage_id,
+                use_fsm, privacy_visibility, auto_assignment, ticket_properties, use_website_helpdesk_knowledge)
+           SELECT
+               '{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}', true, res_company.id, 10, 0,
+               'randomly', true, false, false, false,
+               false, false, false, false, false,
+               false, false, false, false,
+               false, false, false, 7, 3,
+               false, 'internal', false, false, false
+           FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)
            """
     )
 
