@@ -127,7 +127,7 @@ def migrate(cr, version):
                 portal_show_rating, use_sla, auto_close_ticket, auto_close_day, to_stage_id,
                 use_fsm, privacy_visibility, auto_assignment, ticket_properties, use_website_helpdesk_knowledge)
            SELECT
-               '{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}' as name,
+               to_json('{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}'::text) as name,
                true as active, res_company.id as company_id, 10 as sequence, 0 as color,
                'randomly' as assign_method, true as use_alias, false as allow_portal_ticket_closing, false as use_website_helpdesk_form, false as use_website_helpdesk_livechat,
                false as use_website_helpdesk_forum, false as use_website_helpdesk_slides, false as use_helpdesk_timesheet, false as use_helpdesk_sale_timesheet, false as use_credit_notes,
