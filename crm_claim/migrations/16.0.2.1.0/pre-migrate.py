@@ -133,7 +133,7 @@ def migrate(cr, version):
             """
             WITH alias_key AS (
                 INSERT INTO mail_alias (alias_name, alias_model_id, alias_user_id, alias_defaults, alias_parent_model_id, alias_parent_thread_id, alias_contact)
-                SELECT '', %s, 1, to_json('{}'), %s, 1, 'everyone'
+                SELECT ''::text, %s, 1, to_json('{}'), %s, 1, 'everyone'
                 RETURNING id
                 )
             INSERT INTO helpdesk_team
