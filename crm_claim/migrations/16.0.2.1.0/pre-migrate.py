@@ -114,7 +114,7 @@ def migrate(cr, version):
     )
 
     cr.execute(
-        "SELECT id FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id"
+        "SELECT id FROM res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
     )
 
     cr.execute(
