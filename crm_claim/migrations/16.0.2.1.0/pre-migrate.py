@@ -124,16 +124,16 @@ def migrate(cr, version):
     helpdesk_team_model_id = cr.fetchone()[0]
 
     cr.execute(
-        "SELECT id from res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
+        "SELECT id, name from res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
     )
     missing_teams_company_ids = cr.fetchall()
 
-    for missing_team_company_id in missing_teams_company_ids:
+    for missing_team_company_id, company_name in missing_teams_company_ids:
         cr.execute(
             """
             WITH alias_key AS (
                 INSERT INTO mail_alias (alias_name, alias_model_id, alias_user_id, alias_defaults, alias_parent_model_id, alias_parent_thread_id, alias_contact)
-                SELECT ''::text, %s, 1, to_json('{}'::text), %s, 1, 'everyone'
+                SELECT %s, %s, 1, to_json('{}'::text), %s, 1, 'everyone'
                 RETURNING id
                 )
             INSERT INTO helpdesk_team
@@ -157,9 +157,10 @@ def migrate(cr, version):
                RETURNING id, alias_id
                """,
             (
+                "support-%s" % str(company_name).split(" ")[0].lower(),
                 helpdesk_ticket_model_id,
                 helpdesk_team_model_id,
-                missing_team_company_id[0],
+                missing_team_company_id,
             ),
         )
         team_id, alias_id = cr.fetchone()
