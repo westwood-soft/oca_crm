@@ -118,10 +118,10 @@ def migrate(cr, version):
     )
 
     cr.execute("SELECT id from ir_model WHERE model = 'helpdesk.ticket'")
-    helpdesk_ticket_model_id = cr.fetchone()
+    helpdesk_ticket_model_id = cr.fetchone()[0]
 
     cr.execute("SELECT id from ir_model WHERE model = 'helpdesk.team'")
-    helpdesk_team_model_id = cr.fetchone()
+    helpdesk_team_model_id = cr.fetchone()[0]
 
     cr.execute(
         "SELECT id from res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
@@ -156,7 +156,11 @@ def migrate(cr, version):
                FROM alias_key, res_company WHERE res_company.id = %s
                RETURNING id, alias_id
                """,
-            (helpdesk_ticket_model_id, helpdesk_team_model_id, missing_team_company_id),
+            (
+                helpdesk_ticket_model_id,
+                helpdesk_team_model_id,
+                missing_team_company_id[0],
+            ),
         )
         team_id, alias_id = cr.fetchone()
         cr.execute(
