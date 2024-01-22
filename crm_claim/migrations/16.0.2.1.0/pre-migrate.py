@@ -96,23 +96,29 @@ def migrate(cr, version):
 
     cr.execute(
         """
+           WITH temp_table AS (
+               SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
+           )
            UPDATE mail_message SET
                model = 'helpdesk.ticket',
-               res_id = ht.id
-           FROM helpdesk_ticket ht
+               res_id = temp_table.id
+           FROM temp_table
            WHERE mail_message.model = 'crm.claim'
-           AND mail_message.res_id = ht._claim_id
+           AND mail_message.res_id = temp_table._claim_id
         """
     )
 
     cr.execute(
         """
+           WITH temp_table AS (
+               SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
+           )
            UPDATE ir_attachment SET
                res_model = 'helpdesk.ticket',
-               res_id = ht.id
-           FROM helpdesk_ticket ht
+               res_id = temp_table.id
+           FROM temp_table
            WHERE ir_attachment.res_model = 'crm.claim'
-           AND ir_attachment.res_id = ht._claim_id
+           AND ir_attachment.res_id = temp_table._claim_id
         """
     )
 
@@ -217,6 +223,28 @@ def migrate(cr, version):
     cr.execute(
         """
             UPDATE helpdesk_ticket AS ht SET team_id = team.id FROM helpdesk_team AS team WHERE ht.company_id = team.company_id
+        """
+    )
+
+    cr.execute(
+        """
+           UPDATE mail_message SET
+               model = 'helpdesk.ticket',
+               res_id = ht.id
+           FROM helpdesk_ticket ht
+           WHERE mail_message.model = 'crm.claim'
+           AND mail_message.res_id = ht._claim_id
+        """
+    )
+
+    cr.execute(
+        """
+           UPDATE ir_attachment SET
+               res_model = 'helpdesk.ticket',
+               res_id = ht.id
+           FROM helpdesk_ticket ht
+           WHERE ir_attachment.res_model = 'crm.claim'
+           AND ir_attachment.res_id = ht._claim_id
         """
     )
 
