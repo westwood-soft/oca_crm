@@ -187,7 +187,7 @@ def migrate(cr, version):
                res_model = 'helpdesk.ticket',
                res_id = ht.id
            FROM helpdesk_ticket ht
-           WHERE ir_attachment.model = 'crm.claim'
+           WHERE ir_attachment.res_model = 'crm.claim'
            AND ir_attachment.res_id = ht._claim_id
            AND ht._claim_id IS NOT NULL
         """
