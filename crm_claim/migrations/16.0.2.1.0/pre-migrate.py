@@ -124,7 +124,7 @@ def migrate(cr, version):
     helpdesk_team_model_id = cr.fetchone()[0]
 
     cr.execute(
-        "SELECT id, name from res_company WHERE NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
+        "SELECT id, name from res_company WHERE id != 26 AND NOT EXISTS (SELECT 1 FROM helpdesk_team ht WHERE ht.company_id = res_company.id)"
     )
     missing_teams_company_ids = cr.fetchall()
 
