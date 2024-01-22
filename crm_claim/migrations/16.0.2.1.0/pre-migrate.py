@@ -145,7 +145,7 @@ def migrate(cr, version):
                     portal_show_rating, use_sla, auto_close_ticket, auto_close_day, to_stage_id,
                     use_fsm, privacy_visibility, auto_assignment, use_website_helpdesk_knowledge)
                SELECT
-                   to_json('{"de_DE": "Support ' || res_company.name || '", "en_US": "Support ' || res_company.name || '"}') as name,
+                   %s,
                    alias_key.id,
                    true, res_company.id, 10, 0,
                    'randomly', true, false, false, false,
@@ -160,6 +160,10 @@ def migrate(cr, version):
                 "support-%s" % str(company_name).split(" ")[0].lower(),
                 helpdesk_ticket_model_id,
                 helpdesk_team_model_id,
+                {
+                    "de_DE": "Support %s" % company_name,
+                    "en_US": "Support %s" % company_name,
+                },
                 missing_team_company_id,
             ),
         )
@@ -177,7 +181,6 @@ def migrate(cr, version):
            FROM helpdesk_ticket ht
            WHERE mail_message.model = 'crm.claim'
            AND mail_message.res_id = ht._claim_id
-           AND ht._claim_id IS NOT NULL
         """
     )
 
@@ -189,7 +192,6 @@ def migrate(cr, version):
            FROM helpdesk_ticket ht
            WHERE ir_attachment.res_model = 'crm.claim'
            AND ir_attachment.res_id = ht._claim_id
-           AND ht._claim_id IS NOT NULL
         """
     )
 
