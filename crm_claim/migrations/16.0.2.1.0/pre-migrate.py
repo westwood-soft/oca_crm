@@ -94,6 +94,28 @@ def migrate(cr, version):
         """
     )
 
+    cr.execute(
+        """
+           UPDATE mail_message SET
+               model = 'helpdesk.ticket',
+               res_id = ht.id
+           FROM helpdesk_ticket ht
+           WHERE mail_message.model = 'crm.claim'
+           AND mail_message.res_id = ht._claim_id
+        """
+    )
+
+    cr.execute(
+        """
+           UPDATE ir_attachment SET
+               res_model = 'helpdesk.ticket',
+               res_id = ht.id
+           FROM helpdesk_ticket ht
+           WHERE ir_attachment.res_model = 'crm.claim'
+           AND ir_attachment.res_id = ht._claim_id
+        """
+    )
+
     util.merge_model(cr, "crm.claim.stage", "helpdesk.stage")
     util.merge_model(cr, "crm.claim.category", "helpdesk.ticket.type")
 
@@ -176,28 +198,6 @@ def migrate(cr, version):
             "UPDATE mail_alias SET alias_defaults = to_json('{\"team_id\": %s}'::text) WHERE id = %s",
             (team_id, alias_id),
         )
-
-    cr.execute(
-        """
-           UPDATE mail_message SET
-               model = 'helpdesk.ticket',
-               res_id = ht.id
-           FROM helpdesk_ticket ht
-           WHERE mail_message.model = 'crm.claim'
-           AND mail_message.res_id = ht._claim_id
-        """
-    )
-
-    cr.execute(
-        """
-           UPDATE ir_attachment SET
-               res_model = 'helpdesk.ticket',
-               res_id = ht.id
-           FROM helpdesk_ticket ht
-           WHERE ir_attachment.res_model = 'crm.claim'
-           AND ir_attachment.res_id = ht._claim_id
-        """
-    )
 
     cr.execute(
         """
