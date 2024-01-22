@@ -110,15 +110,12 @@ def migrate(cr, version):
 
     cr.execute(
         """
-           WITH temp_table AS (
-               SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
-           )
            UPDATE mail_followers SET
                res_model = 'helpdesk.ticket',
-               res_id = temp_table.id
-           FROM temp_table
+               res_id = helpdesk_ticket.id
+           FROM helpdesk_ticket
            WHERE mail_followers.res_model = 'crm.claim'
-           AND mail_followers.res_id = temp_table._claim_id
+           AND mail_followers.res_id = helpdesk_ticket._claim_id
         """
     )
 
