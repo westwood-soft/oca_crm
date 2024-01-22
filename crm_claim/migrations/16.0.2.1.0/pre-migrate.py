@@ -1,3 +1,5 @@
+import json
+
 from odoo.upgrade import util
 
 
@@ -160,10 +162,12 @@ def migrate(cr, version):
                 "support-%s" % str(company_name).split(" ")[0].lower(),
                 helpdesk_ticket_model_id,
                 helpdesk_team_model_id,
-                {
-                    "de_DE": "Support %s" % company_name,
-                    "en_US": "Support %s" % company_name,
-                },
+                json.dumps(
+                    {
+                        "de_DE": "Support %s" % company_name,
+                        "en_US": "Support %s" % company_name,
+                    }
+                ),
                 missing_team_company_id,
             ),
         )
