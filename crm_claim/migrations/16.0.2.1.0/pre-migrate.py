@@ -113,6 +113,20 @@ def migrate(cr, version):
            WITH temp_table AS (
                SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
            )
+           UPDATE mail_followers SET
+               model = 'helpdesk.ticket',
+               res_id = temp_table.id
+           FROM temp_table
+           WHERE mail_followers.model = 'crm.claim'
+           AND mail_followers.res_id = temp_table._claim_id
+        """
+    )
+
+    cr.execute(
+        """
+           WITH temp_table AS (
+               SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
+           )
            UPDATE ir_attachment SET
                res_model = 'helpdesk.ticket',
                res_id = temp_table.id
