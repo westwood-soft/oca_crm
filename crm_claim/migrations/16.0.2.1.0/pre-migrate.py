@@ -117,7 +117,7 @@ def migrate(cr, version):
                res_model = 'helpdesk.ticket',
                res_id = temp_table.id
            FROM temp_table
-           WHERE mail_followers.model = 'crm.claim'
+           WHERE mail_followers.res_model = 'crm.claim'
            AND mail_followers.res_id = temp_table._claim_id
         """
     )
