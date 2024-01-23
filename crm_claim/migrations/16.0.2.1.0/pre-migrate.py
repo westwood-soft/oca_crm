@@ -46,8 +46,8 @@ def migrate(cr, version):
     cr.execute(
         """
                INSERT INTO helpdesk_stage
-                (_stage_id, name, sequence, legend_blocked, legend_normal, legend_done)
-                SELECT id, name, sequence, '{ "de_DE": "Blockiert", "en_EN": "Blocked" }', '{ "de_DE": "In Bearbeitung", "en_EN": "In Progress" }', '{ "de_DE": "Erledigt", "en_EN": "Done" }'
+                (_stage_id, active, name, sequence, legend_blocked, legend_normal, legend_done)
+                SELECT id, true, name, sequence, '{ "de_DE": "Blockiert", "en_EN": "Blocked" }', '{ "de_DE": "In Bearbeitung", "en_EN": "In Progress" }', '{ "de_DE": "Erledigt", "en_EN": "Done" }'
                FROM crm_claim_stage
                WHERE NOT name ->> 'en_US' in ('New', 'Erledigt')
                """
@@ -63,8 +63,16 @@ def migrate(cr, version):
 
     cr.execute(
         """
+        UPDATE crm_claim SET
+        name['en_US'] = 'Done'
+        WHERE name ->> 'en_US' = 'Erledigt'
+        """
+    )
+
+    cr.execute(
+        """
         UPDATE helpdesk_stage SET
-        (_stage_id) = (SELECT id FROM crm_claim_stage WHERE name ->> 'en_US' = 'Erledigt')
+        (_stage_id) = (SELECT id FROM crm_claim_stage WHERE name ->> 'en_US' = 'Done')
         WHERE name ->> 'en_US' = 'Solved'
         """
     )
@@ -132,9 +140,6 @@ def migrate(cr, version):
            AND ir_attachment.res_id = temp_table._claim_id
         """
     )
-
-    util.merge_model(cr, "crm.claim.stage", "helpdesk.stage")
-    util.merge_model(cr, "crm.claim.category", "helpdesk.ticket.type")
 
     cr.execute(
         """
@@ -221,9 +226,6 @@ def migrate(cr, version):
             SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
         """
     )
-    # ticket_claim_tuples = cr.fetchall()
-    # mapping = {ticket_id: claim_id for ticket_id, claim_id in ticket_claim_tuples}
-    # util.replace_record_references_batch(cr, mapping, "helpdesk.ticket", "crm.claim")
 
     cr.execute(
         """
@@ -259,7 +261,6 @@ def migrate(cr, version):
         """
     )
 
-    util.merge_model(cr, "crm.claim", "helpdesk.ticket")
     util.remove_column(cr, "helpdesk_stage", "_stage_id")
     util.remove_column(cr, "helpdesk_ticket_type", "_categ_id")
     util.remove_column(cr, "helpdesk_ticket", "_stage_id")
