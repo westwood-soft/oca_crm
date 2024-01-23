@@ -221,9 +221,9 @@ def migrate(cr, version):
             SELECT id, _claim_id FROM helpdesk_ticket WHERE _claim_id IS NOT NULL
         """
     )
-    ticket_claim_tuples = cr.fetchall()
-    mapping = {ticket_id: claim_id for ticket_id, claim_id in ticket_claim_tuples}
-    util.replace_record_references_batch(cr, mapping, "helpdesk.ticket", "crm.claim")
+    # ticket_claim_tuples = cr.fetchall()
+    # mapping = {ticket_id: claim_id for ticket_id, claim_id in ticket_claim_tuples}
+    # util.replace_record_references_batch(cr, mapping, "helpdesk.ticket", "crm.claim")
 
     cr.execute(
         """
