@@ -64,7 +64,7 @@ def migrate(cr, version):
     cr.execute(
         """
         UPDATE crm_claim_stage SET
-        name['en_US'] = 'Done'
+        name = jsonb_set(name, '{en_US}', to_jsonb(info ->> 'Done'))
         WHERE name ->> 'en_US' = 'Erledigt'
         """
     )
