@@ -266,3 +266,5 @@ def migrate(cr, version):
     util.remove_column(cr, "helpdesk_ticket", "_stage_id")
     util.remove_column(cr, "helpdesk_ticket", "_categ_id")
     util.remove_column(cr, "helpdesk_ticket", "_claim_id")
+
+    util.force_install_module(cr, "ww_helpdesk_additions")
