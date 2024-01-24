@@ -63,7 +63,7 @@ def migrate(cr, version):
 
     cr.execute(
         """
-        UPDATE crm_claim SET
+        UPDATE crm_claim_stage SET
         name['en_US'] = 'Done'
         WHERE name ->> 'en_US' = 'Erledigt'
         """
