@@ -93,7 +93,7 @@ def migrate(cr, version):
     util.create_column(cr, "helpdesk_ticket", "_stage_id", "int4")
 
     cr.execute("SELECT id FROM ir_sequence WHERE code = 'helpdesk.ticket'")
-    helpdesk_ticket_sequence_name = "ir_sequence_{cr.fetchone()[0]}"
+    helpdesk_ticket_sequence_name = f"ir_sequence_{cr.fetchone()[0]}"
 
     cr.execute(
         """
