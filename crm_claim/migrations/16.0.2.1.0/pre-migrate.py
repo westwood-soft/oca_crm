@@ -103,7 +103,7 @@ def migrate(cr, version):
                id, categ_id, stage_id, nextval('%s'), name, active, CAST(split_part(model_ref_id, ',', 2) AS INTEGER) as sale_order_id, create_date, write_date, date_closed, description, partner_id, user_id, company_id, 'normal'
                FROM crm_claim WHERE model_ref_id like 'sale.order,%' and exists(select 1 from sale_order where id = cast(split_part(model_ref_id, ',', 2) as integer))
         """,
-        (helpdesk_ticket_sequence_name,),
+        helpdesk_ticket_sequence_name,
     )
 
     cr.execute(
