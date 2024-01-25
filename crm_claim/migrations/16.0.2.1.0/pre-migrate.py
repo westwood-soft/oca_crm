@@ -92,14 +92,18 @@ def migrate(cr, version):
     util.create_column(cr, "helpdesk_ticket", "_categ_id", "int4")
     util.create_column(cr, "helpdesk_ticket", "_stage_id", "int4")
 
+    cr.execute("SELECT id FROM ir_sequence WHERE code = 'helpdesk.ticket'")
+    helpdesk_ticket_sequence_name = "ir_sequence_{cr.fetchone()[0]}"
+
     cr.execute(
         """
                INSERT INTO helpdesk_ticket
                (_claim_id, _categ_id, _stage_id, ticket_ref, name, active, sale_order_id, create_date, write_date, close_date, description, partner_id, user_id, company_id, kanban_state)
                SELECT
-               id, categ_id, stage_id, nextval('helpdesk_ticket_id_seq'), name, active, CAST(split_part(model_ref_id, ',', 2) AS INTEGER) as sale_order_id, create_date, write_date, date_closed, description, partner_id, user_id, company_id, 'normal'
+               id, categ_id, stage_id, nextval('%s'), name, active, CAST(split_part(model_ref_id, ',', 2) AS INTEGER) as sale_order_id, create_date, write_date, date_closed, description, partner_id, user_id, company_id, 'normal'
                FROM crm_claim WHERE model_ref_id like 'sale.order,%' and exists(select 1 from sale_order where id = cast(split_part(model_ref_id, ',', 2) as integer))
-        """
+        """,
+        (helpdesk_ticket_sequence_name,),
     )
 
     cr.execute(
